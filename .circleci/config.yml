@@ -6,19 +6,15 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-
       - setup_remote_docker
-
       - run:
           name: Build Docker image
           command: |
             docker build -t bhanuakepogu/docker-react -f Dockerfile.dev .
-
       - run:
           name: Run tests
           command: |
             docker run bhanuakepogu/docker-react npm run test -- --coverage
-
 workflows:
   version: 2
   build_and_test:
