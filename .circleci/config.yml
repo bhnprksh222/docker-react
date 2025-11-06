@@ -26,13 +26,15 @@ jobs:
 
       # Install AWS Elastic Beanstalk CLI
       - run:
-          name: Install AWS EB CLI
+          name: Install AWS CLI and EB CLI
           command: |
-            sudo apt-get update && sudo apt-get install -y python3-pip
+            sudo apt-get update
+            sudo apt-get install -y unzip
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
             pip install awsebcli --upgrade --user
             export PATH=$PATH:~/.local/bin
-
-      # Configure AWS credentials
       - run:
           name: Configure AWS
           command: |
