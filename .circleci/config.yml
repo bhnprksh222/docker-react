@@ -46,6 +46,7 @@ jobs:
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
+            eb init docker-react --platform docker --region us-east-2
             eb use Docker-react-env
             eb deploy
 
