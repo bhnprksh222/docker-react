@@ -43,14 +43,28 @@ pipeline {
                 script {
                     echo "Installing AWS and Elastic Beanstalk CLI..."
                     sh '''
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-                        unzip -q awscliv2.zip
-                        ./aws/install -i /var/jenkins_home/.local/awscli -b /var/jenkins_home/.local/bin --update
-                        pip3 install awsebcli --upgrade --user 
+                     # Clean up any old AWS CLI installation
+                    rm -rf /var/jenkins_home/.local/awscli || true
+                    rm -rf aws awscliv2.zip || true
 
-                        aws --version
+                    # Download ARM version for Apple Silicon / Graviton
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 
-                    '''
+                    # Unzip quietly and overwrite without prompt
+                    unzip -oq awscliv2.zip
+
+                    # Install AWS CLI locally
+                    ./aws/install -i /var/jenkins_home/.local/awscli -b /var/jenkins_home/.local/bin --update
+
+                    # Install Elastic Beanstalk CLI
+                    pip3 install --upgrade --user awsebcli
+
+                    # Add to PATH for current job
+                    export PATH=$PATH:/var/jenkins_home/.local/bin
+
+                    # Verify installations
+                    aws --version
+                    eb --version                    '''
                 }
             }
         }
