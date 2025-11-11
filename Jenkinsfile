@@ -1,6 +1,10 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'docker:27.0.3-cli'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
@@ -14,6 +18,12 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Verify Docker') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
 
         stage('Build Docker Image') {
             steps {
