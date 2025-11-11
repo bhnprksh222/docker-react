@@ -43,17 +43,16 @@ pipeline {
                 script {
                     echo "Installing AWS and Elastic Beanstalk CLI..."
                     sh '''
-                        apt-get update
-                        apt-get install -y docker.io unzip python3-pip
-                        rm -rf awscliv2.zip aws/
+                       # Install dependencies if necessary (using sudo apt-get requires permissions)
+                       # sudo apt-get update && sudo apt-get install -y python3-pip unzip curl docker.io
+
+                        # Install AWS CLI v2 (as the current user)
                         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                         unzip -o awscliv2.zip
-                        ./aws/install
-                        pip install awsebcli --upgrade --user
-                        export PATH=$PATH:~/.local/bin
+                        ./aws/install -i ~/.local/awscli -b ~/.local/bin
 
-                        docker --version
-                        aws --version
+                        # Install EB CLI using pip (as the current user)
+                        pip3 install awsebcli --upgrade --user 
                     '''
                 }
             }
