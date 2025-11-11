@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'amazon/aws-cli:2.15.0'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    } 
+    agent any
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
@@ -48,9 +43,17 @@ pipeline {
                 script {
                     echo "Installing AWS and Elastic Beanstalk CLI..."
                     sh '''
+                        apt-get update
+                        apt-get install -y docker.io unzip python3-pip
+                        rm -rf awscliv2.zip aws/
+                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        unzip -o awscliv2.zip
+                        ./aws/install
                         pip install awsebcli --upgrade --user
                         export PATH=$PATH:~/.local/bin
-                        eb --version
+
+                        docker --version
+                        aws --version
                     '''
                 }
             }
@@ -74,7 +77,6 @@ pipeline {
                 script {
                     echo "Deploying to Elastic Beanstalk..."
                     sh '''
-                        export PATH=$PATH:~/.local/bin
                         eb init docker-react --platform docker --region ${AWS_DEFAULT_REGION}
                         eb use Docker-react-env
                         eb deploy
