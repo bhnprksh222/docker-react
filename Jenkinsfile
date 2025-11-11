@@ -2,7 +2,7 @@ pipeline {
    agent {
         docker {
             image 'docker:27.0.3-cli'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.docker:/root/.docker'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v $WORKSPACE/.docker:/root/.docker'
         }
     } 
     environment {
