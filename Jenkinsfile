@@ -1,15 +1,10 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:27.0.3-dind'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    } 
+    agent any
 
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
-        AWS_SECRET_ACCESS_KEY  = credentials('aws-secret-key')
-        AWS_DEFAULT_REGION  = "us-east-2"
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        AWS_DEFAULT_REGION = "us-east-2"
         DOCKER_IMAGE = "bhanuakepogu/docker-react"
     }
 
@@ -23,17 +18,17 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Builing docker image..."
-                    sh 'docker build -t ${DOCKER_IMAGE} -f Dockerfile.dev' 
-                } 
+                    echo "Building Docker image..."
+                    sh "docker build -t ${DOCKER_IMAGE} -f Dockerfile.dev ."
+                }
             }
         }
 
-        stage('Run Test') {
-            steps{
+        stage('Run Tests') {
+            steps {
                 script {
-                    echo "Running Test..."
-                    sh 'docker run ${DOCKER_IMAGE} npm run test -- --coverage'
+                    echo "Running tests..."
+                    sh "docker run ${DOCKER_IMAGE} npm run test -- --coverage"
                 }
             }
         }
@@ -46,11 +41,11 @@ pipeline {
                         sudo apt-get update
                         sudo apt-get install -y unzip python3-pip
                         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        unzip awscliv2.zip
+                        unzip -o awscliv2.zip
                         sudo ./aws/install
-                        pip isntall awsebcli -- upgrade --user
+                        pip install awsebcli --upgrade --user
                         export PATH=$PATH:~/.local/bin
-                        '''
+                    '''
                 }
             }
         }
@@ -58,12 +53,12 @@ pipeline {
         stage('Configure AWS') {
             steps {
                 script {
-                    echo "Configuring the AWS credentials"
+                    echo "Configuring AWS credentials..."
                     sh '''
                         aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
-                        aws configure set aws_secret_key_id ${AWS_SECRET_ACCESS_KEY}
-                        aws configre set default.region ${AWS_DEFAULT_REGION}
-                        '''
+                        aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+                        aws configure set default.region ${AWS_DEFAULT_REGION}
+                    '''
                 }
             }
         }
@@ -71,23 +66,24 @@ pipeline {
         stage('Deploy to Elastic Beanstalk') {
             steps {
                 script {
-                    echo "Deplopying to AWS elastic beanstalk"
+                    echo "Deploying to Elastic Beanstalk..."
                     sh '''
                         eb init docker-react --platform docker --region ${AWS_DEFAULT_REGION}
                         eb use Docker-react-env
                         eb deploy
-                        '''
+                    '''
                 }
             }
         }
-    } 
+    }
 
     post {
-        success{
-            echo 'Build and the deployment completed successfully'
+        success {
+            echo 'Build and deployment completed successfully!'
         }
         failure {
-            echo 'Build or the deployment failed.'
+            echo 'Build or deployment failed.'
         }
     }
 }
+
