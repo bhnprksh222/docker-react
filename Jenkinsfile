@@ -1,10 +1,5 @@
 pipeline {
-   agent {
-        docker {
-            image 'docker:27.0.3-cli'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v $WORKSPACE/.docker:/root/.docker'
-        }
-    } 
+    agent any
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
