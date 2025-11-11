@@ -64,7 +64,7 @@ pipeline {
         }
 
         stage('Deploy to Elastic Beanstalk') {
-            stage {
+            steps {
                 script {
                     echo "Deplopying to AWS elastic beanstalk"
                     sh '''
