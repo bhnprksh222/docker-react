@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'amazon/aws-cli:2.15.0'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-access-key')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
@@ -43,26 +48,9 @@ pipeline {
                 script {
                     echo "Installing AWS and Elastic Beanstalk CLI..."
                     sh '''
-                     # Clean up any old AWS CLI installation
-                    rm -rf /var/jenkins_home/.local/awscli || true
-                    rm -rf aws awscliv2.zip || true
-
-                    # Download ARM version for Apple Silicon / Graviton
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-
-                    # Unzip quietly and overwrite without prompt
-                    unzip -oq awscliv2.zip
-
-                    # Install AWS CLI locally
-                    ./aws/install -i /var/jenkins_home/.local/awscli -b /var/jenkins_home/.local/bin --update
-
-                    # Install Elastic Beanstalk CLI
                     pip3 install --upgrade --user awsebcli
-
-                    # Add to PATH for current job
                     export PATH=$PATH:/var/jenkins_home/.local/bin
 
-                    # Verify installations
                     aws --version
                     eb --version                    '''
                 }
@@ -87,6 +75,7 @@ pipeline {
                 script {
                     echo "Deploying to Elastic Beanstalk..."
                     sh '''
+                        export PATH=$PATH:~/.local/bin
                         eb init docker-react --platform docker --region ${AWS_DEFAULT_REGION}
                         eb use Docker-react-env
                         eb deploy
